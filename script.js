@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // 🔧 TODO: 여기에 너의 Supabase 값 넣기
-const SUPABASE_URL = "https://supabase.com/dashboard/project/xtopvoxmayqmavryslbo";
+const SUPABASE_URL = "https://xtopvoxmayqmavryslbo.supabase.co";
 const SUPABASE_ANON_KEY = "Dbs30519**";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
