@@ -1,57 +1,64 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// ===============================
+// Supabase 연결 설정
+// ===============================
+const SUPABASE_URL = "https://xtopvoxmayqmavryslbo.supabase.co";  // 네 프로젝트 URL
+const SUPABASE_ANON_KEY = "Dbs30519**";                   // 절대 service_role 넣지 말기
 
-// 🔧 TODO: 여기에 너의 Supabase 값 넣기
-const SUPABASE_URL = "https://xtopvoxmayqmavryslbo.supabase.co";
-const SUPABASE_ANON_KEY = "Dbs30519**";
+// v2 방식
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 기본 트리 ID (일단 1로 고정)
-const TREE_ID = 1;
+// ===============================
+// 메시지 전송 함수
+// ===============================
+async function submitMessage() {
+  const textarea = document.getElementById("message");
+  const message = textarea.value.trim();
 
-const addBtn = document.getElementById("add-message-btn");
-const modal = document.getElementById("modal");
-const closeModal = document.getElementById("close-modal");
-const sendBtn = document.getElementById("send-btn");
-const messageInput = document.getElementById("message-input");
-const messagesList = document.getElementById("messages-list");
+  if (message.length === 0) return;
 
-// 모달 열기
-addBtn.onclick = () => modal.classList.remove("hidden");
-
-// 모달 닫기
-closeModal.onclick = () => modal.classList.add("hidden");
-
-// 메시지 전송
-sendBtn.onclick = async () => {
-  const text = messageInput.value.trim();
-  if (!text) return;
-
-  await supabase
+  const { data, error } = await supabaseClient
     .from("messages")
-    .insert({ tree_id: TREE_ID, message: text });
+    .insert([{ text: message }]);   // text 컬럼에 맞춰 삽입
 
-  messageInput.value = "";
-  modal.classList.add("hidden");
+  if (error) {
+    console.error("Insert Error:", error);
+    alert("메시지 저장 실패: " + error.message);
+    return;
+  }
+
+  textarea.value = "";
   loadMessages();
-};
+}
 
-// 메시지 불러오기
+
+// ===============================
+// 메시지 불러오기 함수
+// ===============================
 async function loadMessages() {
-  const { data } = await supabase
+  const list = document.getElementById("messages");
+
+  const { data, error } = await supabaseClient
     .from("messages")
     .select("*")
-    .eq("tree_id", TREE_ID)
     .order("created_at", { ascending: false });
 
-  messagesList.innerHTML = "";
+  if (error) {
+    console.error("Load Error:", error);
+    return;
+  }
 
-  data.forEach(row => {
+  list.innerHTML = "";
+
+  data.forEach((msg) => {
     const li = document.createElement("li");
-    li.textContent = row.message;
-    messagesList.appendChild(li);
+    li.textContent = msg.text;
+    list.appendChild(li);
   });
 }
 
-// 초기 로드
-loadMessages();
+
+// 첫 실행 시 메시지 불러오기
+window.onload = () => {
+  loadMessages();
+};
